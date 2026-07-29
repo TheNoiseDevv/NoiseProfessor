@@ -1,1 +1,36 @@
+name: Crypto Professor Bot
 
+on:
+  schedule:
+    # Times are UTC. This posts twice a day: 13:00 and 21:00 UTC.
+    # Edit or remove lines to change cadence. (https://crontab.guru helps.)
+    - cron: "0 13 * * *"
+    - cron: "0 21 * * *"
+  workflow_dispatch: {}   # lets you trigger a run manually from the Actions tab
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Post a tweet
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL: ${{ secrets.OPENAI_MODEL }}
+          X_API_KEY: ${{ secrets.X_API_KEY }}
+          X_API_SECRET: ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_SECRET: ${{ secrets.X_ACCESS_SECRET }}
+          # Controlled by the DRY_RUN repository secret.
+          # Set the secret to 1 = generate & preview only (no post, no cost).
+          # Set the secret to 0 = post for real.
+          DRY_RUN: ${{ secrets.DRY_RUN }}
+        run: python professor_bot.py
